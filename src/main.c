@@ -5,27 +5,27 @@
 #define max_size 100
 
 typedef struct variable {
-	char alph[2];
+	char alph;
 	int num;
-	struct variable* next;
 }variable;
 
-variable* head = NULL;
+variable varray[max_size];
 
-char assignment[max_size] = { 0, };
-char tokenlist[3][max_size] = { NULL, };
-char stack[max_size];
-char output [6] = "print";
-char is_real_output[6] = {0,};
 
-int tokenlist_index = 0;
-int top = -1;
-int input;
+char assignment[max_size];
+char* stack[max_size];
+char symbol[7] = { '(',')','+' ,'-' ,'*' ,'/','\n' };
+int top = -1; //사용
+int varray_index = 0; // 사용
 
-char possible_alph[26] = { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z' };
+
+
+char peek() {
+	return stack[top];
+}
 
 char pop() {
-	if (isempty() == true) {
+	if (top < 0) {
 		printf("stack is empty");
 	}
 	else {
@@ -36,51 +36,98 @@ char pop() {
 	}
 }
 
-void push(char value) {
-	if (isfull() == true) {
-		printf("stack is full");
-	}
-	else {
-		top++;
-		return stack[top] = value;
-	}
+void push(char* value) {
+	top++;
+	stack[top] = value;
 }
 
-void infix_to_postfix() {
-
-
-
+bool is_number(char target) { // 문자열 탐색. 문자가 심볼이 아닐며
+	for (int i = 0; i < 7; i++) {
+		if (target == symbol[i]) {
+			return false;
+		}
+	}
+	return true;
 
 }
 
-/*
-			 * 높은 연산자가 rst += tmp되고 낮은게 push되면됨
-			 *
-			 * if. 스택에 낮은연산자가 있고 높은연산자가 들어올때 이때 그냥 스택에 쌓인다. > 스택에 +가 있고 * 또는 / 가 들어오면 그냥
-			 * 쌓인다. > 스택에 -가 있고 * 또는 / 가 들어오면 그냥 쌓인다.
-			 *
-			 * else if 2. 스택에 높은 연산자가 있고 낮은 연산자가 들어올때. 이때는 스택에서 pop을 해서 아웃풋에넣고 낮은걸 스택에 푸쉬 >
-			 * 스택에 * 가있고 + 또는 -가 들어오면 *를 팝하고 아웃풋에 출력하고 + - 를 푸쉬한다. > 스택에 / 가있고 + 또는 -가 들어오면
-			 * /를 팝하고 아웃풋에 출력하고 + - 를 푸쉬한다.
-			 *
-			 * else 같은순위끼리는 그냥 푸쉬한다.
+void infix_to_postfix(char infix[]) {
+	char temp[100] = {0, };
+	char postfixlist[100][max_size];
+	int postfix_index = 0;
+	int temp_index = 0;
+	
+
+	for (int i = 0; i < strlen(infix); i++) {
+		
+		if (is_number(infix[i] == true)) {
+			temp[temp_index] = infix[i];
+			temp_index++;
+		}
+
+		else  {
+			printf("%s\n", temp);
+			
+			strcpy(postfixlist[postfix_index],temp);
+			postfix_index++;
+			
+			for (int j = 0; j < temp_index; j++) {
+				temp[j] = ' ';
+			}
+			temp_index = 0;
+			
+			if (infix[i] == '+') {
+				strcpy(postfixlist[postfix_index], "+");
+				postfix_index++;
+			}
+			else if (infix[i] == '-') {
+				strcpy(postfixlist[postfix_index], "-");
+				postfix_index++;
+			}
+			else if (infix[i] == '*') {
+				strcpy(postfixlist[postfix_index], "*");
+				postfix_index++;
+			}
+			else if (infix[i] == '/') {
+				strcpy(postfixlist[postfix_index], "/");
+				postfix_index++;
+			}
+			else if (infix[i] == '(') {
+				strcpy(postfixlist[postfix_index], "(");
+				postfix_index++;
+			}
+			else if (infix[i] == ')') {
+				strcpy(postfixlist[postfix_index], ")");
+				postfix_index++;
+			}
+		}
+	}
+
+	for (int i = 0; i < postfix_index; i++) {
+		printf("%s \n", postfixlist[i]);
+	}
+	
+}
 
 
-			 */
 
 bool is_vaild_assignment(char assignmenti[]) {
 	int i = 0;
-	int input = 0;
-	/*가장먼저 치환문이 맞는지 판별. 조건은 */
+	int equlchek = 0;
+	int tokenlist_index = 0; 
+	char tokenlist[3][max_size] = { NULL, };
+	
+	/*가장먼저 치환문이 맞는지 판별. 조건은 = 을 보고 판단*/
+	
 	for (int i = 0; i < 100; i++) {
 		if (assignment[i] == '=') {
-			printf("right 통과");
-			break;
+			equlchek++;
 		}
-		else if (i == 99) {
-			printf("waring = 이 없습니다. \n");
-			return false;
-		}
+	}
+	
+	if (equlchek != 1) {
+		printf("??");
+		return false;
 	}
 
 	char* token = strtok(assignment, "=");
@@ -89,35 +136,36 @@ bool is_vaild_assignment(char assignmenti[]) {
 		strcpy(tokenlist[tokenlist_index], token);
 		tokenlist_index++;
 		token = strtok(NULL, "=");
-	}// token 분리
-	if (tokenlist[0][1] != NULL) {
+	}
+	// tokenlist[0]에는 =기준 오른쪽 문자열, tokenlist[1]에는 수식이 들어감.
+
+	if (tokenlist[0][1] != NULL) { // 문자열에서 알파벳 하나가 아니라 두자 이상이면 조건만족x
 		printf("variable is not single 변수가 알파벳 하나가아닙니다 \n");
-		return false; // 변수가 '알파벳 하나가 아니면 틀림.'
+		return false; // 
+	}
+	else {
+	varray[varray_index].alph = tokenlist[0][0]; // 모든조건 만족시 구조체 배열에 담음
+	varray_index++;
 	}
 
-	while (tokenlist[1][i] != NULL) {
-		if (tokenlist[1][i] == '.') {
-			printf("정수가 아닙니다.");
-			return false;
-		}
-		i++;
-	}
-	input = atoi(tokenlist[1]);
+	//tokenlist[1]을 가지고 계산. 결과값은 varray[varray_index].num에 저장함.
+
+	
+	infix_to_postfix(tokenlist[1]);
+	return true;
+
 }
 
 int main() {
-
-	for (int i = 0; i < 6; i++) {
-		is_real_output[i] = assignment[i];
-	}
-
-	if (strcmp(assignment, is_real_output) == 0) {
-		//뒤에 수식 계산으로
-	}
-		
+	while (1) {
 		scanf("%s", &assignment);
 		getchar();
-		
-		is_vaild_assignment(assignment);
-		
+
+		if (is_vaild_assignment(assignment) == false) {
+			printf("ERROR");
+		}
+		else {
+			printf("OK");
+		}
+	}
 }
