@@ -5,16 +5,22 @@
 #define max_size 100
 
 typedef struct variable {
-	char alph;
+	char alph[2];
 	int num;
+	struct variable* next;
 }variable;
+
+variable* head = NULL;
 
 char assignment[max_size] = { 0, };
 char tokenlist[3][max_size] = { NULL, };
 char stack[max_size];
+char output [6] = "print";
+char is_real_output[6] = {0,};
 
 int tokenlist_index = 0;
 int top = -1;
+int input;
 
 char possible_alph[26] = { 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z' };
 
@@ -38,6 +44,13 @@ void push(char value) {
 		top++;
 		return stack[top] = value;
 	}
+}
+
+void infix_to_postfix() {
+
+
+
+
 }
 
 /*
@@ -78,7 +91,7 @@ bool is_vaild_assignment(char assignmenti[]) {
 		token = strtok(NULL, "=");
 	}// token 분리
 	if (tokenlist[0][1] != NULL) {
-		printf("variable is not single 변수가 알파엣하나가아닙니다 \n");
+		printf("variable is not single 변수가 알파벳 하나가아닙니다 \n");
 		return false; // 변수가 '알파벳 하나가 아니면 틀림.'
 	}
 
@@ -93,14 +106,18 @@ bool is_vaild_assignment(char assignmenti[]) {
 }
 
 int main() {
-	scanf("%s", &assignment);
 
-	printf("\n");
-	printf("\n");
-	printf("\n");
+	for (int i = 0; i < 6; i++) {
+		is_real_output[i] = assignment[i];
+	}
 
-	is_vaild_assignment(assignment);
-
-	printf("확인");
-
+	if (strcmp(assignment, is_real_output) == 0) {
+		//뒤에 수식 계산으로
+	}
+		
+		scanf("%s", &assignment);
+		getchar();
+		
+		is_vaild_assignment(assignment);
+		
 }
