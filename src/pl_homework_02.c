@@ -16,9 +16,7 @@ void err () {
 }
 
 void get_next_token () {
-	if (token != NN){
-		token = -1;
-	}
+	token = -1;
 	for (int i = idex; i < strlen(s1); i++){
 		if (token == NN){
 			break;
@@ -103,7 +101,7 @@ void factor () {
 			err();
 		} 
 		else { 
-			expr(); 
+			expr();
 		}
 
 		if (token == RP) {
@@ -117,10 +115,12 @@ void factor () {
 		}
 		else {
 			err();
+			token = NN;
 		}
 	}
 	else { 
 		err();
+		token = NN;
 	}
 }
 
@@ -130,7 +130,7 @@ int main () {
 	get_next_token();
 	expr();
 	if (token == END) {
-		printf("complete");
+		printf("complete\n");
 	}
 	else {
 		err();
