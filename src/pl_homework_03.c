@@ -6,11 +6,15 @@
 enum {ERR = 0,PLUS = 1,STAR = 2,NUMBER = 3,LP = 4,RP = 5,END = 6,ID = 7, PRINT = 8, EQL = 9, RET = 10}token;
 // NN은 틀린 토큰
 // END는 문자열 끝
-char* str;
 char s1[500];
-int idex = 0;
+int idex;
+int idx = 0;
 enum token;
 int num;
+int rst = 0;
+int array[26];
+char testprint[6] = "print ";
+char close[4] = "exit";
 
 void get_next_token();
 void statement();
@@ -25,6 +29,8 @@ void err () {
 }
 
 void get_next_token () {
+	char number[3];
+	int numberidx=0;
 	token = -1;
 	for (int i = idex; i < strlen(s1); i++){
 		if (token == ERR){
@@ -32,6 +38,7 @@ void get_next_token () {
 		}
 		if (token == 3 && isdigit(s1[i]) == 0) {
 			idex = i;
+			rst = atoi(number);
 			break;
 		}
 		if (s1[i] == '+') {
@@ -54,16 +61,36 @@ void get_next_token () {
 			idex = i + 1 ;
 			break;
 		}
-		else if (s1[i]  >= 97 && s1[i] <= 122) { // 일단 알파벳이라는 이야기.
-			//다음문자가  공백이면 입력받은 알파벳이 ID가되고.
-			//다음 문자가  equl이면 입력받은 알파벳이 ID가 되고.
-			// 다음문자가 또 문자면 print로 의심을 해봐야하고 strncmp
-			//프린트까지 봣는데 프린트가 맞았어 그럼 프린트 바로 다음에 숫자나 영어가 바로 나오면 에러. 공백이 있는지 봐준다. 
-			// 나머지 경우는 err printa+3
-
+		else if (s1[i]  >= 97 && s1[i] <= 122) { 
+			if (s1[i] == 'p') {
+				if (strncmp(s1,testprint,6) == 0) {
+					token = PRINT;
+					idex = 6;
+					break;
+				}
+			}
+			else if (s1[i] == 'e') {
+				if (strncmp(s1,close,4) == 0) {
+					token = END;
+					idex = 4;
+				}
+			}
+			else {
+				token = ID;
+				num = s1[i] - 97;
+				idex = i + 1;
+			}
+			break;
+		}
+		else if (s1[i] == '=') {
+			token = EQL;
+			idex = i + 1;
+			break;
 		}
 		else if (isdigit(s1[i]) != 0) {
 			token = NUMBER;
+			number[numberidx] = s1[i];
+			numberidx++;
 		}
 		else if (s1[i] == '\n') {
 			token = RET;
@@ -80,45 +107,49 @@ void get_next_token () {
 
 void statement () {
 	if (token == ID) {
-		int idx = num;
 		get_next_token();
-
-		else if (token == EQL) {
+		 if (token == EQL) {
 			get_next_token();
-			if (token == ERR) {
+				if (token == ERR) {
 				err();
-			}
+			token = END;
+				}
 			else {
-				array[idx] = expr();
-				get_net_token();
+				array[num] = expr();
+				get_next_token();
 				if (token != RET) {
 					err();
+			token = END;
 				}
 			}
 		}
-
 		else {
 			err();
+			token = END;
 		}
 	}
 	else if (token == END) {
 		printf("program close\n");
 	}
+
 	else if (token == PRINT) {
 		get_next_token();
 		if (token == ERR) {
 			err();
+			token = END;
 		}
 		else {
 			printf("%d\n",expr());
 			get_next_token();
 			if (token != RET) {
 				err();
+				token = END;
 			}
 		}
 	}
 	else {
 		err();
+		token = END;
 	}
 }
 
@@ -129,6 +160,7 @@ int expr () {
 		get_next_token();
 		if (token == ERR) {
 			err();
+			token = END;
 			break;
 		}
 		r = r + term();
@@ -141,8 +173,9 @@ int term () {
 	r = factor();
 	while(token == STAR) {
 		get_next_token();
-		if (token == NN) {
+		if (token == ERR) {
 			err();
+			token = END;
 			break;
 		}
 		r = r * factor();
@@ -153,22 +186,24 @@ int term () {
 int factor () {
 	int r;
 	if (token == NUMBER) {
-		r = num;
+		r = rst;
 		get_next_token();
 		
 		if (token == ERR) {
 			err();
+			token = END;
 		}
 	
 	}
 	else if (token == ID) {
 		r = array[num];
-		get_netx_token();
+		get_next_token();
 	}
 	else if (token == LP) {
 		get_next_token();
 		if (token == ERR) {
 			err();
+			token = END;
 		} 
 		else { 
 			r = expr();
@@ -180,30 +215,30 @@ int factor () {
 			
 			if (token == ERR) {
 				err();
+				token = END;
 			}
 		
 		}
 		else {
 			err();
-			token = ERR;
+			token = END;
 		}
 	}
 	else { 
 		err();
-		token = ERR;
+		token = END;
 	}
 	return r;
 }
 
 
 int main () {
-	fgets(s1,sizeof(s1),stdin);
-	get_next_token();
-	expr();
-	if (token == END) {
-		printf("complete\n");
+	while(token != END){
+		fgets(s1,sizeof(s1),stdin);
+		idex = 0;
+		get_next_token();
+		statement();
+		fflush(stdin);
 	}
-	else {
-		err();
-	}
+	
 }
